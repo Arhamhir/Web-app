@@ -35,7 +35,7 @@ pipeline {
 
     stage('Build Frontend Image') {
       steps {
-        sh 'docker build --build-arg VITE_API_URL=http://${PUBLIC_IP}:8201 -t ${DOCKERHUB_USERNAME}/taskflow-frontend:part2 ./frontend'
+        sh 'docker build --no-cache --pull --build-arg VITE_API_URL=http://${PUBLIC_IP}:8201 -t ${DOCKERHUB_USERNAME}/taskflow-frontend:part2 ./frontend'
       }
     }
 
