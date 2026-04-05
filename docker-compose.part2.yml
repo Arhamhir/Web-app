@@ -16,7 +16,7 @@ services:
     working_dir: /app
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db_part2:5432/taskflow_db
-      JWT_SECRET_KEY: secret
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
     volumes:
       - ./backend:/app
     depends_on:
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   frontend_part2:
-    image: arhamheer/taskflow-frontend:part1
+    image: arhamheer/taskflow-frontend:part2
     volumes:
       - ./frontend:/workspace/frontend:ro
     depends_on:
