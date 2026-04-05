@@ -1,171 +1,164 @@
-# TaskFlow
+# TaskFlow - Part I Deployment Guide
 
-TaskFlow is a full-stack project management app.
+This repository contains a simple full-stack web application for the assignment.
 
 - Frontend: React + Vite
-- Backend: FastAPI + SQLAlchemy
+- Backend: FastAPI
 - Database: PostgreSQL
 
-## 1) What was done in your Linux setup
+The Part I requirement is met like this:
+1. Write Dockerfiles for the web app.
+2. Build Docker images.
+3. Push images to Docker Hub.
+4. Use docker-compose to launch the app on EC2.
+5. Attach a persistent volume to PostgreSQL.
 
-1. Removed the old Windows virtual environment from backend (it had Scripts/Lib structure).
-2. Created a Linux virtual environment and used it for backend packages.
-3. Installed backend dependencies from backend/requirements.txt.
-4. Updated backend code to load variables from backend/.env automatically.
-5. Started PostgreSQL using Docker (because local PostgreSQL and npm were not available on host).
-6. Started backend on port 8000.
-7. Started frontend on port 5173 using a Node Docker container.
-8. Verified both endpoints responded successfully.
+## Files used for Part I
 
-## 2) General commands you should know
+- [backend/Dockerfile](backend/Dockerfile)
+- [frontend/Dockerfile](frontend/Dockerfile)
+- [docker-compose.yml](docker-compose.yml)
 
-### Create a Linux venv
-python3 -m venv .venv
+## 1) What you do on EC2 after cloning the repo
 
-Explanation:
-Creates an isolated Python environment in .venv.
+### Install Docker and Git
+```bash
+sudo apt update
+sudo apt install -y git
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+newgrp docker
+docker --version
+docker compose version
+```
 
-### Activate venv
-source .venv/bin/activate
+### Clone the repo
+```bash
+git clone https://github.com/Arhamhir/Web-app.git
+cd Web-app
+```
 
-Explanation:
-Switches shell to use Python/pip from .venv.
+### Set variables for your deployment
+```bash
+cp .env.example .env
+```
 
-### Install Python requirements
-pip install -r requirements.txt
-
-Explanation:
-Installs all packages listed in requirements.txt.
-
-### Run FastAPI app
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-Explanation:
-Starts backend API on port 8000.
-
-### Run React/Vite app
-npm install
-npm run dev -- --host 0.0.0.0 --port 5173
-
-Explanation:
-Installs frontend packages and runs dev server on port 5173.
-
-## 3) Exact project commands used
-
-Project root:
-/media/arham/90E2383BE238283C/Data/Programs/React/check1
-
-### Backend environment setup
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r backend/requirements.txt
+Then load the environment variables:
+```bash
+export DOCKERHUB_USERNAME=your_dockerhub_username
+export PUBLIC_IP=3.239.92.83
+export POSTGRES_PASSWORD=taskflow123
+export JWT_SECRET_KEY='your_strong_secret_here'
+```
 
 Explanation:
-Creates and activates one Linux venv at project root, then installs backend dependencies.
+- `DOCKERHUB_USERNAME` is used by docker-compose to pull your published images.
+- `PUBLIC_IP` is used when building the frontend image so the browser calls the EC2 backend.
+- `POSTGRES_PASSWORD` protects the database container.
+- `JWT_SECRET_KEY` signs login tokens.
 
-### Backend run command
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1/backend
-/media/arham/90E2383BE238283C/Data/Programs/React/check1/.venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+## 2) Build and push images to Docker Hub
+
+### Login to Docker Hub
+```bash
+docker login
+```
+
+### Build backend image
+```bash
+docker build -t $DOCKERHUB_USERNAME/taskflow-backend:part1 ./backend
+```
+
+### Build frontend image
+```bash
+docker build --build-arg VITE_API_URL=http://$PUBLIC_IP:8000 -t $DOCKERHUB_USERNAME/taskflow-frontend:part1 ./frontend
+```
+
+### Push both images
+```bash
+docker push $DOCKERHUB_USERNAME/taskflow-backend:part1
+docker push $DOCKERHUB_USERNAME/taskflow-frontend:part1
+```
 
 Explanation:
-Runs backend using the project root venv interpreter explicitly.
+- The backend image contains the FastAPI server and its code.
+- The frontend image contains the built React app.
+- Both images are published to Docker Hub so the deployment can be reproduced.
 
-### PostgreSQL with Docker
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD= -e POSTGRES_DB= -p 5432:5432 postgres:16
+## 3) Launch the app with docker-compose
+
+The root [docker-compose.yml](docker-compose.yml) uses your Docker Hub images and creates a PostgreSQL container with persistent storage.
+
+### Start the stack
+```bash
+docker compose pull
+docker compose up -d
+```
+
+### Check containers
+```bash
+docker compose ps
+```
+
+### Check logs if needed
+```bash
+docker compose logs --tail=100 db
+docker compose logs --tail=100 backend
+docker compose logs --tail=100 frontend
+```
 
 Explanation:
-Starts PostgreSQL container with:
-- DB user: postgres
-- DB password: 
-- DB name: taskflow_db
-- Host port 5432 mapped to container port 5432
+- `db` is PostgreSQL.
+- `backend` is the FastAPI container.
+- `frontend` is the React app served by Nginx.
+- PostgreSQL data stays persistent in the Docker volume `postgres_data`.
 
-If container already exists:
-docker start taskflow-postgres
+## 4) URLs to verify
 
-### Frontend with Docker (Node on container)
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-docker rm -f taskflow-frontend
-docker run -d --name taskflow-frontend -p 5173:5173 -v /media/arham/90E2383BE238283C/Data/Programs/React/check1/frontend:/app -w /app node:20 sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+Use these in your browser:
+- Frontend: `http://3.239.92.83`
+- Backend API: `http://3.239.92.83:8000`
+- Swagger docs: `http://3.239.92.83:8000/docs`
 
-Explanation:
-Runs frontend in a Node container and maps app URL to localhost:5173.
+## 5) Quick checks
 
-## 4) Why Docker PostgreSQL was used instead of local install
-
-Docker was chosen because:
-1. Local PostgreSQL client/service was not present in the Linux host environment.
-2. Non-interactive sudo install was not available in the current session.
-3. Docker was available and working, which gives a fast, reproducible DB setup.
-4. Your backend requires PostgreSQL features (for example ARRAY type in models), so Docker PostgreSQL matches production behavior better than switching to SQLite.
-
-## 5) How the PostgreSQL container was created and used
-
-### Creation
-Command used:
-docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD= -e POSTGRES_DB=taskflow_db -p 5432:5432 postgres:16
-
-### Usage by backend
-The backend reads DATABASE_URL from backend/.env:
-DATABASE_URL=postgresql://postgres:@localhost:5432/taskflow_db
-
-Backend then connects to localhost:5432, which is mapped to the running Docker container.
-
-## 6) Daily startup workflow (recommended)
-
-Run these in order whenever you start the project.
-
-### Step A: Start database
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-docker start taskflow-postgres
-
-### Step B: Start backend
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-source .venv/bin/activate
-cd backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-
-### Step C: Start frontend
-If npm is installed on host:
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1/frontend
-npm install
-npm run dev -- --host 0.0.0.0 --port 5173
-
-If npm is not installed on host, use Docker:
-cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-docker start taskflow-frontend
-
-If taskflow-frontend does not exist yet, create it once with:
-docker run -d --name taskflow-frontend -p 5173:5173 -v /media/arham/90E2383BE238283C/Data/Programs/React/check1/frontend:/app -w /app node:20 sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
-
-## 7) URLs to verify app
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- Backend Swagger docs: http://localhost:8000/docs
-
-## 8) Stop commands
-
-Stop frontend container:
-docker stop taskflow-frontend
-
-Stop postgres container:
-docker stop taskflow-postgres
-
-Stop backend server:
-Press Ctrl+C in backend terminal.
-
-## 9) Quick health checks
-
-Check backend:
+```bash
 curl http://localhost:8000/
+curl -I http://localhost
+```
 
-Expected response:
-{"message":"Welcome to TaskFlow API"}
+Expected:
+- Backend returns: `{"message":"Welcome to TaskFlow API"}`
+- Frontend returns HTTP 200
 
-Check frontend headers:
-curl -I http://localhost:5173/
+## 6) What the compose file does
 
-Expected: HTTP/1.1 200 OK
+The compose file:
+- pulls the backend image from Docker Hub
+- pulls the frontend image from Docker Hub
+- starts PostgreSQL in a separate container
+- mounts a persistent volume for PostgreSQL data
+- exposes frontend on port 80 and backend on port 8000
+
+## 7) Useful stop commands
+
+```bash
+docker compose down
+```
+
+To stop and remove the database volume too:
+```bash
+docker compose down -v
+```
+
+## 8) Notes for submission
+
+For the report, include screenshots of:
+1. Docker build commands
+2. Docker push to Docker Hub
+3. `docker compose ps`
+4. Frontend opened in browser
+5. Backend docs opened in browser
+6. PostgreSQL volume visible in the compose file
+
+That is enough for Part I.

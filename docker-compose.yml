@@ -11,8 +11,7 @@ services:
     restart: unless-stopped
 
   backend:
-    build:
-      context: ./backend
+    image: ${DOCKERHUB_USERNAME}/taskflow-backend:part1
     container_name: taskflow-backend
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db:5432/taskflow_db
@@ -24,10 +23,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        VITE_API_URL: http://${PUBLIC_IP:-localhost}:8000
+    image: ${DOCKERHUB_USERNAME}/taskflow-frontend:part1
     container_name: taskflow-frontend
     depends_on:
       - backend
