@@ -73,12 +73,12 @@ Runs backend using the project root venv interpreter explicitly.
 
 ### PostgreSQL with Docker
 cd /media/arham/90E2383BE238283C/Data/Programs/React/check1
-docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pajay6205 -e POSTGRES_DB=taskflow_db -p 5432:5432 postgres:16
+docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD= -e POSTGRES_DB= -p 5432:5432 postgres:16
 
 Explanation:
 Starts PostgreSQL container with:
 - DB user: postgres
-- DB password: pajay6205
+- DB password: 
 - DB name: taskflow_db
 - Host port 5432 mapped to container port 5432
 
@@ -105,11 +105,11 @@ Docker was chosen because:
 
 ### Creation
 Command used:
-docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=pajay6205 -e POSTGRES_DB=taskflow_db -p 5432:5432 postgres:16
+docker run -d --name taskflow-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD= -e POSTGRES_DB=taskflow_db -p 5432:5432 postgres:16
 
 ### Usage by backend
 The backend reads DATABASE_URL from backend/.env:
-DATABASE_URL=postgresql://postgres:pajay6205@localhost:5432/taskflow_db
+DATABASE_URL=postgresql://postgres:@localhost:5432/taskflow_db
 
 Backend then connects to localhost:5432, which is mapped to the running Docker container.
 
