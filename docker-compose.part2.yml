@@ -1,0 +1,41 @@
+services:
+  db_part2:
+    image: postgres:16
+    container_name: taskflow-db-part2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskflow123}
+      POSTGRES_DB: taskflow_db
+    volumes:
+      - postgres_data_part2:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend_part2:
+    image: arhamheer/taskflow-backend:part1
+    container_name: taskflow-backend-part2
+    working_dir: /app
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db_part2:5432/taskflow_db
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db_part2
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8201:8000"
+    restart: unless-stopped
+
+  frontend_part2:
+    image: arhamheer/taskflow-frontend:part1
+    container_name: taskflow-frontend-part2
+    volumes:
+      - ./frontend:/workspace/frontend:ro
+    depends_on:
+      - backend_part2
+    ports:
+      - "8200:80"
+    restart: unless-stopped
+
+volumes:
+  postgres_data_part2:
