@@ -55,7 +55,7 @@ pipeline {
 
     stage('Health Check') {
       steps {
-        sh 'curl -fsS http://localhost:8201/'
+        sh 'sleep 5 && curl -fsS http://localhost:8201/ --retry 5 --retry-delay 2'
         sh 'curl -fsSI http://localhost:8200/'
       }
     }
