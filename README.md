@@ -1,1 +1,1 @@
-Jenkins correctly passes the build checks
+Jenkins correctly passes the build check
