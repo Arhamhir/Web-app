@@ -16,7 +16,7 @@ services:
     working_dir: /app
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db_part2:5432/taskflow_db
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
+      JWT_SECRET_KEY: secret
     volumes:
       - ./backend:/app
     depends_on:
