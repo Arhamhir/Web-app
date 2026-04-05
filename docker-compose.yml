@@ -1,3 +1,5 @@
+name: taskflow-part1
+
 services:
   db:
     image: postgres:16
@@ -11,7 +13,7 @@ services:
     restart: unless-stopped
 
   backend:
-    image: ${DOCKERHUB_USERNAME}/taskflow-backend:part1
+    image: arhamheer/taskflow-backend:part1
     container_name: taskflow-backend
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db:5432/taskflow_db
@@ -23,7 +25,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: ${DOCKERHUB_USERNAME}/taskflow-frontend:part1
+    image: arhamheer/taskflow-frontend:part1
     container_name: taskflow-frontend
     depends_on:
       - backend

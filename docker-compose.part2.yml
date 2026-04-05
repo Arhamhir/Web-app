@@ -1,3 +1,5 @@
+name: taskflow-part2
+
 services:
   db_part2:
     image: postgres:16
