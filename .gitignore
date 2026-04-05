@@ -1,61 +1,83 @@
+# -----------------------------
 # Python
+# -----------------------------
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+
+# Build/test artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# Packaging artifacts
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
+site/
 *.egg-info/
-.installed.cfg
-*.egg
+.eggs/
+pip-wheel-metadata/
 
 # Virtual environments
+.venv/
 venv/
 env/
 ENV/
-.venv
+backend/.venv/
+backend/venv/
 
-# Environment variables
+# -----------------------------
+# Node / Frontend
+# -----------------------------
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.eslintcache
+*.tsbuildinfo
+
+# -----------------------------
+# Environment and secrets
+# -----------------------------
 .env
-.env.local
-.env.*.local
+.env.*
+*.local
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
-# IDE
-.vscode/
+# -----------------------------
+# Docker / containers
+# -----------------------------
+*.pid
+docker-data/
+pgdata/
+
+# -----------------------------
+# IDE / editor
+# -----------------------------
+.vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 .idea/
-*.swp
-*.swo
-*.swn
-*.su
-*.sublime-*
-.DS_Store
-*.vstudio
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
+*.swp
+*.swo
+*.swn
 
-# Frontend
-node_modules/
-dist/
-dist-ssr/
-*.local
-.env.local
-.env.*.local
-
+# -----------------------------
 # Logs
+# -----------------------------
 logs/
 *.log
 npm-debug.log*
@@ -64,18 +86,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# OS
+# -----------------------------
+# OS / misc
+# -----------------------------
 .DS_Store
 Thumbs.db
 ehthumbs.db
+.cache/
 
-# Database
+# Local databases (non-production)
 *.db
 *.sqlite
 *.sqlite3
-
-# Misc
-.cache/
-.pytest_cache/
-.coverage
-htmlcov/

@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 from typing import Optional
 import os
+from dotenv import load_dotenv
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from . import crud, schemas
 from .database import get_db
+
+load_dotenv()
 
 # Secret key for JWT - set this in production environment
 SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")

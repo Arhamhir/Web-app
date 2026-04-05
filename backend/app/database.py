@@ -2,8 +2,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 import os
 import re
+
+# Load variables from backend/.env when present.
+load_dotenv()
 
 # Database URL - read from environment variable
 DATABASE_URL = os.environ.get(
