@@ -3,7 +3,6 @@ name: taskflow-part1
 services:
   db:
     image: postgres:16
-    container_name: taskflow-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskflow123}
@@ -14,7 +13,6 @@ services:
 
   backend:
     image: arhamheer/taskflow-backend:part1
-    container_name: taskflow-backend
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-taskflow123}@db:5432/taskflow_db
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
@@ -26,7 +24,6 @@ services:
 
   frontend:
     image: arhamheer/taskflow-frontend:part1
-    container_name: taskflow-frontend
     depends_on:
       - backend
     ports:
