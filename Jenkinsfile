@@ -49,7 +49,7 @@ pipeline {
     stage('Deploy Part2 Stack') {
       steps {
         sh 'docker compose -f $COMPOSE_FILE down --remove-orphans || true'
-        sh 'PUBLIC_IP=${PUBLIC_IP} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} JWT_SECRET_KEY=${JWT_SECRET_KEY} docker compose -f $COMPOSE_FILE up -d --force-recreate'
+        sh 'PUBLIC_IP=${PUBLIC_IP} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} JWT_SECRET_KEY=${JWT_SECRET_KEY} docker compose -f $COMPOSE_FILE up -d --pull always --force-recreate'
       }
     }
 
