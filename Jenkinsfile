@@ -16,7 +16,8 @@ pipeline {
   environment {
     COMPOSE_FILE = 'docker-compose.part2.yml'
     POSTGRES_PASSWORD = 'taskflow123'
-    JWT_SECRET_KEY = 'jenkins-part2-secret-change-me'
+    JWT_SECRET_KEY = 'secret'
+    DOCKERHUB_USERNAME = 'arhamheer'
   }
 
   stages {
@@ -26,31 +27,27 @@ pipeline {
       }
     }
 
-    stage('Backend Build Check (Containerized)') {
+    stage('Build Backend Image') {
       steps {
-        script {
-          docker.image('python:3.12-slim').inside('-v $WORKSPACE/backend:/app -w /app') {
-            sh 'pip install --no-cache-dir -r requirements.txt'
-            sh 'python -m compileall app'
-          }
-        }
+        sh 'docker build -t ${DOCKERHUB_USERNAME}/taskflow-backend:part1 ./backend'
       }
     }
 
-    stage('Frontend Build Check (Containerized)') {
+    stage('Build Frontend Image') {
       steps {
-        script {
-          docker.image('node:20-alpine').inside('-v $WORKSPACE/frontend:/app -w /app') {
-            sh 'npm install'
-            sh 'VITE_API_URL=http://${PUBLIC_IP}:8201 npm run build'
-          }
-        }
+        sh 'docker build --build-arg VITE_API_URL=http://${PUBLIC_IP}:8201 -t ${DOCKERHUB_USERNAME}/taskflow-frontend:part2 ./frontend'
+      }
+    }
+
+    stage('Push Part2 Images') {
+      steps {
+        sh 'docker push ${DOCKERHUB_USERNAME}/taskflow-backend:part1'
+        sh 'docker push ${DOCKERHUB_USERNAME}/taskflow-frontend:part2'
       }
     }
 
     stage('Deploy Part2 Stack') {
       steps {
-        sh 'docker compose -f $COMPOSE_FILE pull'
         sh 'docker compose -f $COMPOSE_FILE down --remove-orphans || true'
         sh 'PUBLIC_IP=${PUBLIC_IP} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} JWT_SECRET_KEY=${JWT_SECRET_KEY} docker compose -f $COMPOSE_FILE up -d --force-recreate'
       }
